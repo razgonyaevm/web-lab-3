@@ -114,7 +114,61 @@
         }
 
         function forceRedraw() {
+            validateRInput();
             setTimeout(drawCanvas, 50);
+        }
+
+        function validateRInput() {
+            const rInput = document.querySelector('[id*="r_input"] input');
+            if (!rInput) return;
+
+            let value = parseFloat(rInput.value.replace(',', '.'));
+
+            if (isNaN(value)) {
+                value = 1.0;
+            } else {
+                if (value > 3) value = 3;
+                if (value < 1) value = 1;
+
+                value = Math.round(value * 2) / 2;
+            }
+
+            rInput.value = value.toFixed(1).replace('.', ',');
+        }
+
+        function validateForm() {
+            const xSelected = document.querySelector('[id*="x"] input[type="radio"]:checked');
+            const yValue = document.querySelector('[id*="y"]').value;
+            const rValue = document.querySelector('[id*="r_input"] input').value;
+
+            if (!xSelected || !yValue || !rValue) {
+                // Используем PrimeFaces для показа сообщения
+                if (PF('widgetMessages')) {
+                    PF('widgetMessages').renderMessage({
+                        "summary": "Ошибка заполнения формы",
+                        "detail": "Не все поля формы заполнены!",
+                        "severity": "error"
+                    });
+                } else {
+                    alert("Не все поля формы заполнены!");
+                }
+                return false;
+            }
+
+            // Дополнительная проверка значения Y
+            const yNum = parseFloat(yValue.replace(',', '.'));
+            if (isNaN(yNum) || yNum < -3 || yNum > 3) {
+                if (PF('widgetMessages')) {
+                    PF('widgetMessages').renderMessage({
+                        "summary": "Ошибка в поле Y",
+                        "detail": "Значение Y должно быть числом от -3 до 3",
+                        "severity": "error"
+                    });
+                }
+                return false;
+            }
+
+            return true;
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -178,15 +232,20 @@
 
                     <div class="form-group">
                         <h:outputLabel value="R:" />
-                        <p:spinner id="r_input" value="#{areaCheckBean.r}" min="1" max="3" stepFactor="0.5" validatorMessage="R must be between 1 and 3">
+                        <p:spinner id="r_input" value="#{areaCheckBean.r}" required="true"
+                                   requiredMessage="Поле R обязательно для заполнения"
+                                   min="1" max="3" stepFactor="0.5">
                             <f:validateDoubleRange minimum="1" maximum="3" />
                             <p:ajax event="valueChange" update="resultsForm:resultsPanel" oncomplete="forceRedraw()" />
                         </p:spinner>
+                        <p:message for="r_input" />
                     </div>
 
                     <div class="form-actions">
                         <p:commandButton value="Проверить" action="#{areaCheckBean.checkPoint}"
-                                         update="resultsForm:resultsPanel" oncomplete="forceRedraw()" />
+                                         update="resultsForm:resultsPanel"
+                                         onclick="return validateForm()"
+                                         oncomplete="if(args &amp;&amp; !args.validationFailed) forceRedraw()" />
                         <p:commandButton value="Очистить результаты" action="#{resultsBean.clearResults}"
                                          update="resultsForm:resultsPanel" oncomplete="forceRedraw()" />
                     </div>
@@ -233,7 +292,6 @@
 
                     <h:outputText id="pointsJson" value="#{resultsBean.pointsJson}" style="display:none;" />
 
-                    <!-- ИСПРАВЛЕННЫЙ СКРИПТ -->
                     <script>
                         //<![CDATA[
                         (function() {

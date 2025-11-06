@@ -24,7 +24,7 @@
             }
         }
 
-        // Обновляем время сразу при загрузке и затем каждую секунду
+        // Обновляем время сразу при загрузке и затем каждые 5 секунд
         document.addEventListener('DOMContentLoaded', function() {
             updateClock();
             setInterval(updateClock, 5000);
