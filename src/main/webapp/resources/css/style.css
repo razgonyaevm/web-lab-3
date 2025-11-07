@@ -1,0 +1,295 @@
+/* Основные стили */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Шапка */
+.header {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 30px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.header h1 {
+    margin: 0 0 20px 0;
+    color: #333;
+    font-size: 2.5em;
+    font-weight: 300;
+}
+
+.student-info {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    display: inline-block;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.student-info p {
+    margin: 5px 0;
+    font-size: 1.1em;
+}
+
+/* Часы */
+.clock-section {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.clock-section h2 {
+    color: white;
+    margin-bottom: 10px;
+    font-weight: 300;
+}
+
+.clock {
+    font-size: 2em;
+    font-weight: bold;
+    color: white;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 20px 40px;
+    border-radius: 10px;
+    display: inline-block;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Основной контент */
+.main-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.input-section, .graph-section, .results-section {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+/* Формы */
+.form-group {
+    margin-bottom: 25px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Кнопки выбора X */
+.ui-selectonebutton {
+    display: grid !important;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 5px;
+    width: 100%;
+}
+
+.ui-selectonebutton .ui-button {
+    background: #f8f9fa !important;
+    border: 2px solid #dee2e6 !important;
+    color: #495057 !important;
+    transition: all 0.3s ease !important;
+    margin: 2px !important;
+}
+
+.ui-selectonebutton .ui-button.ui-state-active {
+    background: linear-gradient(135deg, #667eea, #764ba2) !important;
+    border-color: #667eea !important;
+    color: white !important;
+}
+
+/* Поля ввода */
+.ui-inputfield, .ui-spinner-input {
+    width: 100% !important;
+    padding: 12px !important;
+    border: 2px solid #e9ecef !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    transition: border-color 0.3s ease !important;
+}
+
+.ui-inputfield:focus, .ui-spinner-input:focus {
+    border-color: #667eea !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+}
+
+/* Кнопки */
+.btn {
+    padding: 12px 24px;
+    margin: 5px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, #f39c12, #e74c3c);
+    color: white;
+}
+
+.btn-warning:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(243, 156, 18, 0.4);
+}
+
+.btn-outline {
+    background: transparent;
+    border: 2px solid white;
+    color: white;
+}
+
+.btn-outline:hover {
+    background: white;
+    color: #667eea;
+}
+
+/* График */
+.graph-section h3 {
+    margin-top: 0;
+    color: #333;
+    text-align: center;
+}
+
+.canvas-container {
+    text-align: center;
+    margin: 20px 0;
+}
+
+#graph {
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    background: white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    cursor: crosshair;
+}
+
+.graph-hint {
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+    margin: 10px 0 0 0;
+}
+
+/* Таблица результатов */
+.results-section h3 {
+    margin-top: 0;
+    color: #333;
+}
+
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.results-table th {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 15px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.results-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #e9ecef;
+    text-align: center;
+}
+
+.results-table tr:nth-child(even) {
+    background: #f8f9fa;
+}
+
+.results-table tr:hover {
+    background: #e3f2fd;
+}
+
+/* Навигация */
+.navigation {
+    text-align: center;
+    margin-top: 30px;
+}
+
+/* Сообщения об ошибках */
+.ui-message-error {
+    color: #e74c3c !important;
+    font-size: 12px !important;
+    margin-top: 5px !important;
+}
+
+/* Стили для PrimeFaces spinner */
+.ui-spinner {
+    width: 100% !important;
+}
+
+.ui-spinner .ui-spinner-input {
+    text-align: center !important;
+}
+
+/* Убедимся, что CSS загружается */
+body::before {
+    content: "CSS loaded";
+    display: none;
+}
+
+/* Стили для сообщений об ошибках */
+.ui-growl {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 300px;
+    z-index: 9999;
+}
+
+.ui-messages-error {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+    padding: 10px;
+    border-radius: 5px;
+    margin: 5px 0;
+}
+
+.ui-message-error-detail {
+    font-weight: bold;
+}

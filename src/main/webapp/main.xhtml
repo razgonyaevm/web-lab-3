@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+<h:head>
+    <title>Основная страница</title>
+    <h:outputStylesheet library="css" name="style.css" />
+    <script type="text/javascript">
+        //<![CDATA[
+        const centerX = 200;
+        const centerY = 200;
+        const unit = 40;
+        window.allPoints = [];
+
+        function drawCanvas() {
+            const canvas = document.getElementById('graph');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, 400, 400);
+
+            const rInput = document.querySelector('[id*="r_input"] input');
+            let currentR = 1.0;
+            if (rInput) {
+                currentR = parseFloat(rInput.value.replace(',', '.')) || 1.0;
+            }
+
+            // Оси
+            ctx.strokeStyle = 'black'; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(0, centerY); ctx.lineTo(400, centerY); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(centerX, 0); ctx.lineTo(centerX, 400); ctx.stroke();
+
+            ctx.font = '12px Arial'; ctx.fillStyle = 'black';
+            ctx.fillText('X', 390, centerY - 5); ctx.fillText('Y', centerX + 5, 10);
+
+            for (let i = -5; i <= 5; i++) {
+                if (i === 0) continue;
+                const posX = centerX + i * unit;
+                const posY = centerY - i * unit;
+                ctx.beginPath(); ctx.moveTo(posX, centerY - 5); ctx.lineTo(posX, centerY + 5); ctx.stroke();
+                ctx.fillText(i, posX - 5, centerY + 20);
+                ctx.beginPath(); ctx.moveTo(centerX - 5, posY); ctx.lineTo(centerX + 5, posY); ctx.stroke();
+                ctx.fillText(i, centerX + 10, posY + 5);
+            }
+
+            // Области
+            ctx.fillStyle = 'rgba(0, 100, 255, 0.5)'; ctx.strokeStyle = 'blue'; ctx.lineWidth = 2;
+
+            // Треугольник
+            ctx.beginPath(); ctx.moveTo(centerX, centerY);
+            ctx.lineTo(centerX + currentR * unit, centerY);
+            ctx.lineTo(centerX, centerY - (currentR / 2) * unit); ctx.closePath(); ctx.fill(); ctx.stroke();
+
+            // Четверть круга
+            ctx.beginPath(); ctx.moveTo(centerX, centerY);
+            ctx.arc(centerX, centerY, (currentR / 2) * unit, Math.PI, 3 * Math.PI / 2, false); ctx.closePath(); ctx.fill(); ctx.stroke();
+
+            // Прямоугольник
+            ctx.beginPath(); ctx.moveTo(centerX, centerY);
+            ctx.lineTo(centerX - currentR * unit, centerY);
+            ctx.lineTo(centerX - currentR * unit, centerY + currentR * unit);
+            ctx.lineTo(centerX, centerY + currentR * unit); ctx.closePath(); ctx.fill(); ctx.stroke();
+
+            // Точки
+            if (window.allPoints && window.allPoints.length > 0) {
+                console.log("Отрисовываем", window.allPoints.length, "точек для R =", currentR);
+                window.allPoints.forEach(p => {
+                    if (Math.abs(p.r - currentR) < 0.001) {
+                        const cx = centerX + p.x * unit;
+                        const cy = centerY - p.y * unit;
+                        ctx.fillStyle = p.result ? 'green' : 'red';
+                        ctx.beginPath(); ctx.arc(cx, cy, 5, 0, 2 * Math.PI); ctx.fill();
+                        ctx.strokeStyle = 'black'; ctx.lineWidth = 1; ctx.stroke();
+                        console.log("Точка:", p.x, p.y, p.result ? "внутри" : "снаружи");
+                    }
+                });
+            }
+        }
+
+        function validateYInput(e) {
+            let v = e.target.value, n = '', d = false, m = false;
+            for (let c of v) {
+                if (c === '-' && !m && n === '') { m = true; n += c; }
+                else if (c === '.' && !d) { d = true; n += c; }
+                else if (/\d/.test(c)) n += c;
+            }
+            n = n.replace(/,/g, '.');
+            const num = parseFloat(n);
+            if (!isNaN(num)) { if (num < -3) n = '-3'; if (num > 3) n = '3'; }
+            e.target.value = n;
+        }
+
+        function handleCanvasClick(e) {
+            const canvas = document.getElementById('graph');
+            const rect = canvas.getBoundingClientRect();
+            let x = (e.clientX - rect.left - centerX) / unit;
+            let y = (centerY - (e.clientY - rect.top)) / unit;
+
+            const allowedX = [-5,-4,-3,-2,-1,0,1,2,3];
+            x = allowedX.reduce((a,b) => Math.abs(b-x) < Math.abs(a-x) ? b : a);
+            y = Math.max(-3, Math.min(3, y));
+
+            const rInput = document.querySelector('[id*="r_input"] input');
+            const r = rInput ? parseFloat(rInput.value.replace(',', '.')) || 1 : 1;
+
+            if (window.submitClick) {
+                submitClick([
+                    {name: 'clickX', value: x.toString()},
+                    {name: 'clickY', value: y.toString()},
+                    {name: 'currentR', value: r.toString()}
+                ]);
+            }
+        }
+
+        function forceRedraw() {
+            validateRInput();
+            setTimeout(drawCanvas, 50);
+        }
+
+        function validateRInput() {
+            const rInput = document.querySelector('[id*="r_input"] input');
+            if (!rInput) return;
+
+            let value = parseFloat(rInput.value.replace(',', '.'));
+
+            if (isNaN(value)) {
+                value = 1.0;
+            } else {
+                if (value > 3) value = 3;
+                if (value < 1) value = 1;
+
+                value = Math.round(value * 2) / 2;
+            }
+
+            rInput.value = value.toFixed(1).replace('.', ',');
+        }
+
+        function validateForm() {
+            const xSelected = document.querySelector('[id*="x"] input[type="radio"]:checked');
+            const yValue = document.querySelector('[id*="y"]').value;
+            const rValue = document.querySelector('[id*="r_input"] input').value;
+
+            if (!xSelected || !yValue || !rValue) {
+                // Используем PrimeFaces для показа сообщения
+                if (PF('widgetMessages')) {
+                    PF('widgetMessages').renderMessage({
+                        "summary": "Ошибка заполнения формы",
+                        "detail": "Не все поля формы заполнены!",
+                        "severity": "error"
+                    });
+                } else {
+                    alert("Не все поля формы заполнены!");
+                }
+                return false;
+            }
+
+            // Дополнительная проверка значения Y
+            const yNum = parseFloat(yValue.replace(',', '.'));
+            if (isNaN(yNum) || yNum < -3 || yNum > 3) {
+                if (PF('widgetMessages')) {
+                    PF('widgetMessages').renderMessage({
+                        "summary": "Ошибка в поле Y",
+                        "detail": "Значение Y должно быть числом от -3 до 3",
+                        "severity": "error"
+                    });
+                }
+                return false;
+            }
+
+            return true;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('graph');
+            if (canvas) canvas.addEventListener('click', handleCanvasClick);
+
+            const rSpinner = document.querySelector('[id*="r_input"] input');
+            if (rSpinner) {
+                rSpinner.addEventListener('change', forceRedraw);
+                rSpinner.addEventListener('input', forceRedraw);
+            }
+
+            document.querySelectorAll('[id*="x"] input[type="radio"]')
+                .forEach(b => b.addEventListener('change', forceRedraw));
+
+            setTimeout(forceRedraw, 500);
+        });
+        //]]>
+    </script>
+</h:head>
+<h:body>
+    <div class="container">
+        <!-- ХЕДЕР -->
+        <div class="header">
+            <h1>Area Check Application</h1>
+            <div class="student-info">
+                <p><strong>ФИО:</strong> Разгоняев Максим Витальевич</p>
+                <p><strong>Группа:</strong> P3231</p>
+                <p><strong>Вариант:</strong> 3467</p>
+            </div>
+        </div>
+
+        <!-- ФОРМА + ГРАФИК -->
+        <div class="main-content">
+            <div class="input-section">
+                <h:form id="form">
+                    <div class="form-group">
+                        <h:outputLabel value="X:" />
+                        <p:selectOneButton id="x" value="#{areaCheckBean.x}">
+                            <f:selectItem itemValue="-5" itemLabel="-5" />
+                            <f:selectItem itemValue="-4" itemLabel="-4" />
+                            <f:selectItem itemValue="-3" itemLabel="-3" />
+                            <f:selectItem itemValue="-2" itemLabel="-2" />
+                            <f:selectItem itemValue="-1" itemLabel="-1" />
+                            <f:selectItem itemValue="0" itemLabel="0" />
+                            <f:selectItem itemValue="1" itemLabel="1" />
+                            <f:selectItem itemValue="2" itemLabel="2" />
+                            <f:selectItem itemValue="3" itemLabel="3" />
+                            <p:ajax event="change" update="resultsForm:resultsPanel" oncomplete="forceRedraw()" />
+                        </p:selectOneButton>
+                    </div>
+
+                    <div class="form-group">
+                        <h:outputLabel value="Y:" />
+                        <h:inputText id="y" value="#{areaCheckBean.y}" onkeyup="validateYInput(event)"
+                                     onblur="validateYInput(event)" styleClass="form-control">
+                            <f:validateDoubleRange minimum="-3" maximum="3" />
+                        </h:inputText>
+                        <p:message for="y" />
+                    </div>
+
+                    <div class="form-group">
+                        <h:outputLabel value="R:" />
+                        <p:spinner id="r_input" value="#{areaCheckBean.r}" required="true"
+                                   requiredMessage="Поле R обязательно для заполнения"
+                                   min="1" max="3" stepFactor="0.5">
+                            <f:validateDoubleRange minimum="1" maximum="3" />
+                            <p:ajax event="valueChange" update="resultsForm:resultsPanel" oncomplete="forceRedraw()" />
+                        </p:spinner>
+                        <p:message for="r_input" />
+                    </div>
+
+                    <div class="form-actions">
+                        <p:commandButton value="Проверить" action="#{areaCheckBean.checkPoint}"
+                                         update="resultsForm:resultsPanel"
+                                         onclick="return validateForm()"
+                                         oncomplete="if(args &amp;&amp; !args.validationFailed) forceRedraw()" />
+                        <p:commandButton value="Очистить результаты" action="#{resultsBean.clearResults}"
+                                         update="resultsForm:resultsPanel" oncomplete="forceRedraw()" />
+                    </div>
+
+                    <p:remoteCommand name="submitClick" action="#{areaCheckBean.checkClick}"
+                                     update="resultsForm:resultsPanel" oncomplete="forceRedraw()" />
+                </h:form>
+            </div>
+
+            <div class="graph-section">
+                <h3>График области</h3>
+                <div class="canvas-container">
+                    <canvas id="graph" width="400" height="400"></canvas>
+                </div>
+                <p class="graph-hint">Кликните по графику для ввода координат</p>
+            </div>
+        </div>
+
+        <!-- ТАБЛИЦА НА ВСЮ ШИРИНУ -->
+        <div class="results-full">
+            <h:form id="resultsForm">
+                <h3>Результаты проверок</h3>
+                <h:panelGroup id="resultsPanel">
+                    <p:dataTable id="resultsTable" value="#{resultsBean.results}" var="p"
+                                 emptyMessage="Нет данных" styleClass="results-table">
+                        <p:column headerText="X"><h:outputText value="#{p.x}" /></p:column>
+                        <p:column headerText="Y"><h:outputText value="#{p.y}" /></p:column>
+                        <p:column headerText="R"><h:outputText value="#{p.r}" /></p:column>
+                        <p:column headerText="Результат">
+                            <h:outputText value="#{p.result ? 'Попадание' : 'Промах'}"
+                                          style="color: #{p.result ? 'green' : 'red'}; font-weight: bold;" />
+                        </p:column>
+                        <p:column headerText="Время обработки">
+                            <h:outputText value="#{p.timestamp}">
+                                <f:convertDateTime pattern="dd.MM.yyyy HH:mm:ss" timeZone="Europe/Moscow"/>
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Время проверки (мс)">
+                            <h:outputText value="#{p.executionTimeMs / 1000.0}">
+                                <f:convertNumber pattern="0.000" locale="ru_RU" />
+                            </h:outputText>
+                        </p:column>
+                    </p:dataTable>
+
+                    <h:outputText id="pointsJson" value="#{resultsBean.pointsJson}" style="display:none;" />
+
+                    <script>
+                        //<![CDATA[
+                        (function() {
+                            const el = document.getElementById('resultsForm:pointsJson');
+                            console.log("Поиск JSON элемента:", 'resultsForm:pointsJson', el);
+                            if (el && el.textContent && el.textContent.trim()) {
+                                try {
+                                    const jsonText = el.textContent.trim();
+                                    console.log("JSON текст:", jsonText);
+                                    window.allPoints = JSON.parse(jsonText);
+                                    console.log("Точки загружены:", window.allPoints);
+                                } catch (e) {
+                                    console.error("Ошибка парсинга JSON:", e);
+                                    console.error("Текст:", el.textContent);
+                                    window.allPoints = [];
+                                }
+                            } else {
+                                console.warn("JSON пустой или не найден");
+                                window.allPoints = [];
+                            }
+                            forceRedraw();
+                        })();
+                        //]]>
+                    </script>
+                </h:panelGroup>
+            </h:form>
+        </div>
+
+        <!-- НАВИГАЦИЯ -->
+        <div class="navigation">
+            <h:form>
+                <h:commandButton value="Вернуться на стартовую страницу"
+                                 action="#{navigationBean.goToIndex}" styleClass="btn btn-primary" />
+            </h:form>
+        </div>
+    </div>
+</h:body>
+</html>
