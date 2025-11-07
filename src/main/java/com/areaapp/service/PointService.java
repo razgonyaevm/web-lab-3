@@ -13,43 +13,38 @@ import org.hibernate.Transaction;
 public class PointService {
 
   public void saveResult(PointResult result) {
-    Session session = HibernateUtil.getSessionFactory().openSession();
-    Transaction transaction = null;
-    try {
-      transaction = session.beginTransaction();
-      session.persist(result);
-      transaction.commit();
-    } catch (Exception e) {
-      if (transaction != null) transaction.rollback();
-      e.printStackTrace();
-    } finally {
-      session.close();
+    try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+      Transaction transaction = null;
+      try {
+        transaction = session.beginTransaction();
+        session.persist(result);
+        transaction.commit();
+      } catch (Exception e) {
+        if (transaction != null) transaction.rollback();
+        e.printStackTrace();
+      }
     }
   }
 
   public List<PointResult> getAllResults() {
-    Session session = HibernateUtil.getSessionFactory().openSession();
-    try {
+    try (Session session = HibernateUtil.getSessionFactory().openSession()) {
       return session
           .createSelectionQuery("FROM PointResult ORDER BY timestamp DESC", PointResult.class)
           .list();
-    } finally {
-      session.close();
     }
   }
 
   public void clearAllResults() {
-    Session session = HibernateUtil.getSessionFactory().openSession();
-    Transaction transaction = null;
-    try {
-      transaction = session.beginTransaction();
-      session.createMutationQuery("DELETE FROM PointResult").executeUpdate();
-      transaction.commit();
-    } catch (Exception e) {
-      if (transaction != null) transaction.rollback();
-      e.printStackTrace();
-    } finally {
-      session.close();
+    try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+      Transaction transaction = null;
+      try {
+        transaction = session.beginTransaction();
+        session.createMutationQuery("DELETE FROM PointResult").executeUpdate();
+        transaction.commit();
+      } catch (Exception e) {
+        if (transaction != null) transaction.rollback();
+        e.printStackTrace();
+      }
     }
   }
 }
