@@ -8,12 +8,6 @@ import lombok.Setter;
 
 @Entity
 @Table(name = "point_result")
-@NamedQueries({
-  @NamedQuery(
-      name = "PointResult.findAll",
-      query = "SELECT p FROM PointResult p ORDER BY p.timestamp DESC"),
-  @NamedQuery(name = "PointResult.clearAll", query = "DELETE FROM PointResult p")
-})
 @NoArgsConstructor
 @Getter
 @Setter
