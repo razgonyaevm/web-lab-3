@@ -14,7 +14,7 @@ import lombok.Setter;
 public class PointResult {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+  private String id; // потому что в MongoDB используется String ID
 
   @Column(name = "x_value", nullable = false)
   private Double x;
@@ -32,7 +32,7 @@ public class PointResult {
   @Temporal(TemporalType.TIMESTAMP)
   private Date timestamp;
 
-  @Column(name = "execution_time_ms")
+  @Column(name = "execution_time_ms", nullable = false)
   private long executionTimeMs;
 
   public PointResult(Double x, Double y, Double r, Boolean result, long executionTimeMs) {

@@ -1,50 +1,48 @@
 package com.areaapp.service;
 
 import com.areaapp.entity.PointResult;
-import com.areaapp.util.HibernateUtil;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Named;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
 import java.util.List;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
 
 @Named
 @ApplicationScoped
+@Transactional
 public class PointService {
 
+  @PersistenceContext(unitName = "mongoPU")
+  private EntityManager entityManager;
+
   public void saveResult(PointResult result) {
-    try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = null;
-      try {
-        transaction = session.beginTransaction();
-        session.persist(result);
-        transaction.commit();
-      } catch (Exception e) {
-        if (transaction != null) transaction.rollback();
-        e.printStackTrace();
-      }
+    try {
+      entityManager.persist(result);
+    } catch (Exception e) {
+      e.printStackTrace();
     }
   }
 
   public List<PointResult> getAllResults() {
-    try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-      return session
-          .createSelectionQuery("FROM PointResult ORDER BY timestamp DESC", PointResult.class)
-          .list();
+    try {
+      List<PointResult> results =
+          entityManager
+              .createQuery(
+                  "SELECT p FROM PointResult p ORDER BY p.timestamp DESC", PointResult.class)
+              .getResultList();
+      return results;
+    } catch (Exception e) {
+      e.printStackTrace();
+      return List.of();
     }
   }
 
   public void clearAllResults() {
-    try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = null;
-      try {
-        transaction = session.beginTransaction();
-        session.createMutationQuery("DELETE FROM PointResult").executeUpdate();
-        transaction.commit();
-      } catch (Exception e) {
-        if (transaction != null) transaction.rollback();
-        e.printStackTrace();
-      }
+    try {
+      int deleted = entityManager.createQuery("DELETE FROM PointResult").executeUpdate();
+    } catch (Exception e) {
+      e.printStackTrace();
     }
   }
 }
